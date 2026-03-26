@@ -1,0 +1,29 @@
+services:
+
+  postgres:
+    container_name: postgres
+    image: sha256:2586e2a95d1c9b31cb2967feb562948f7d364854453d703039b6efa45fe48417
+    environment:
+      POSTGRES_DB: marketplace_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - marketplace-net
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d arctic_team" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+
+volumes:
+  postgres_data:
+
+networks:
+  marketplace-net:
+    driver: bridge
