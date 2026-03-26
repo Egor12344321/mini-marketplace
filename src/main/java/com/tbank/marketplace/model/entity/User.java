@@ -3,7 +3,6 @@ package com.tbank.marketplace.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.web.servlet.handler.UserRoleAuthorizationInterceptor;
 
 import java.util.UUID;
 
