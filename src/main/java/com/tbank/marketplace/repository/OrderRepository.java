@@ -1,4 +1,9 @@
 package com.tbank.marketplace.repository;
 
-public class OrderRepository {
+import com.tbank.marketplace.model.entity.Order;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.UUID;
+
+public interface OrderRepository extends JpaRepository<Order, UUID> {
 }

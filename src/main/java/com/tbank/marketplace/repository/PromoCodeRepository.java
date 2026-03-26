@@ -1,6 +1,9 @@
 package com.tbank.marketplace.repository;
 
+import com.tbank.marketplace.model.entity.PromoCode;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public class PromoCodeRepository {
+import java.util.UUID;
+
+public interface PromoCodeRepository extends JpaRepository<PromoCode, UUID> {
 }
