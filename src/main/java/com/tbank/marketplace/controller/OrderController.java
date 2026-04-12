@@ -3,11 +3,25 @@ package com.tbank.marketplace.controller;
 import com.tbank.marketplace.api.OrdersApi;
 import com.tbank.marketplace.model.OrderCreateRequest;
 import com.tbank.marketplace.model.OrderResponse;
+import com.tbank.marketplace.service.OrderService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+
+@RequiredArgsConstructor
+@RestController
+@Slf4j
+@RequestMapping("/api/orders")
 public class OrderController implements OrdersApi {
+
+    private final OrderService orderService;
 
     @Override
     public ResponseEntity<Void> cancelOrder(UUID id) {
@@ -15,7 +29,9 @@ public class OrderController implements OrdersApi {
     }
 
     @Override
-    public ResponseEntity<OrderResponse> createOrder(OrderCreateRequest orderCreateRequest) {
+    @PostMapping
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderCreateRequest orderCreateRequest) {
+        log.debug("Stared creating new order");
         return null;
     }
 

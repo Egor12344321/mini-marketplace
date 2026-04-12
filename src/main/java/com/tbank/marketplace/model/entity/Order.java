@@ -62,7 +62,6 @@ public class Order {
             default -> false;
         };
     }
-
     public void addItem(OrderItem item) {
         items.add(item);
         item.setOrder(this);
