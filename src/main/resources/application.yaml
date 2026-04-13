@@ -1,3 +1,72 @@
 spring:
   application:
     name: marketplace
+  config:
+    activate:
+      on-profile: prod
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    schemas: public
+    baseline-on-migrate: false
+    validate-on-migrate: true
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/arctic_team?currentSchema=public
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+        format_sql: false
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-expiration: 900000
+  refresh-token-expiration: 604800000
+
+rate-limit:
+  order-create:
+    minutes: 5
+
+logging:
+  level:
+    root: INFO
+    com.arctic.backend_for_arctic_team: INFO
+    org.springframework: WARN
+    org.springframework.security: WARN
+    org.hibernate: WARN
+    org.flywaydb: WARN
+  pattern:
+    console: "%d{ISO8601} [%thread] [%X{requestId}] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+        exclude: env,beans,mappings
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

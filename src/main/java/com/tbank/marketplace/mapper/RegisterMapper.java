@@ -1,4 +1,4 @@
-package com.tbank.marketplace.service;
+package com.tbank.marketplace.mapper;
 
 import com.tbank.marketplace.model.RegisterRequest;
 import com.tbank.marketplace.model.RegisterResponse;
@@ -6,14 +6,13 @@ import com.tbank.marketplace.model.RegisterResponseUser;
 import com.tbank.marketplace.model.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.ZoneOffset;
-import java.util.Set;
 
-@Service
+@Component
 @RequiredArgsConstructor
-public class MapperService {
+public class RegisterMapper {
 
     private final PasswordEncoder encoder;
 
@@ -49,4 +48,5 @@ public class MapperService {
 
         return response;
     }
+
 }

@@ -1,5 +1,6 @@
 package com.tbank.marketplace.security;
 
+import com.tbank.marketplace.model.entity.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.FilterChain;
@@ -50,7 +51,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String email = jwtUtil.extractUsername(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+                User userDetails = (User) userDetailsService.loadUserByUsername(email);
 
                 if (jwtUtil.isTokenExpired(token)){
                     sendError(response, "TOKEN_EXPIRED", "Срок действия токена истек");

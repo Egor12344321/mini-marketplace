@@ -1,16 +1,19 @@
 package com.tbank.marketplace.model.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
 @Table(name = "promo_codes")
-@Data
+@AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@Setter
+@Getter
 public class PromoCode {
 
     @Id

@@ -1,6 +1,10 @@
 package com.tbank.marketplace.exceptions;
 
 
+import com.tbank.marketplace.exceptions.auth_exceptions.InvalidCredentialsException;
+import com.tbank.marketplace.exceptions.auth_exceptions.InvalidRefreshTokenException;
+import com.tbank.marketplace.exceptions.auth_exceptions.UserAlreadyExistsException;
+import com.tbank.marketplace.exceptions.order_exceptions.*;
 import com.tbank.marketplace.model.ErrorResponse;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.http.HttpStatus;
@@ -37,5 +41,65 @@ public class GlobalExceptionHandler {
         errorResponse.setDetails(JsonNullable.of(e.getMessage()));
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    @ExceptionHandler(RateLimitingCreateOrderException.class)
+    public ResponseEntity<ErrorResponse> handleRateLimitingCreateOrderException(RateLimitingCreateOrderException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("ORDER_LIMIT_EXCEEDED");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorResponse);
+    }
+
+    @ExceptionHandler(OrderHasActiveException.class)
+    public ResponseEntity<ErrorResponse> handleHasActiveOrderException(OrderHasActiveException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(ProductInactiveException.class)
+    public ResponseEntity<ErrorResponse> handleProductInactiveException(ProductInactiveException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(PromoCodeInvalidException.class)
+    public ResponseEntity<ErrorResponse> handlePromoCodeInvalidException(PromoCodeInvalidException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(PromoCodeMinAmountException.class)
+    public ResponseEntity<ErrorResponse> handlePromoCodeMinAmountException(PromoCodeMinAmountException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientStockException(InsufficientStockException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 }

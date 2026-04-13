@@ -1,9 +1,9 @@
 package com.tbank.marketplace.service;
 
-import com.tbank.marketplace.exceptions.InvalidCredentialsException;
-import com.tbank.marketplace.exceptions.InvalidRefreshTokenException;
-import com.tbank.marketplace.exceptions.UserAlreadyExistsException;
-import com.tbank.marketplace.model.*;
+import com.tbank.marketplace.exceptions.auth_exceptions.InvalidCredentialsException;
+import com.tbank.marketplace.exceptions.auth_exceptions.InvalidRefreshTokenException;
+import com.tbank.marketplace.exceptions.auth_exceptions.UserAlreadyExistsException;
+import com.tbank.marketplace.mapper.RegisterMapper;
 import com.tbank.marketplace.model.AuthResponse;
 import com.tbank.marketplace.model.AuthResponseUser;
 import com.tbank.marketplace.model.LoginRequest;
@@ -18,9 +18,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Service;
 
@@ -30,7 +28,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
 
     private final UserRepository userRepository;
-    private final MapperService mapperService;
+    private final RegisterMapper registerMapper;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
 
@@ -38,11 +36,11 @@ public class AuthService {
 
         if (userRepository.existsByEmail(registerRequest.getEmail())) throw new UserAlreadyExistsException("Пользователь с таким email уже существует");
 
-        User user = mapperService.mapFromRegisterReqToUserEntity(registerRequest);
+        User user = registerMapper.mapFromRegisterReqToUserEntity(registerRequest);
 
         User savedUser = userRepository.save(user);
         log.info("Пользователь: {} (id={}) успешно создан", savedUser.getEmail(), savedUser.getId());
-        return mapperService.mapFromUserEntityToRegisterResponse(savedUser);
+        return registerMapper.mapFromUserEntityToRegisterResponse(savedUser);
     }
 
     public AuthResponse login(@Valid LoginRequest loginRequest) {
