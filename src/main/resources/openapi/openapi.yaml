@@ -266,6 +266,18 @@ components:
           pattern: '^[A-Z0-9_]{4,20}$'
           description: Промокод (опционально)
 
+    OrderUpdateRequest:
+      type: object
+      required:
+        - items
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/OrderItemRequest'
+
     OrderItemResponse:
       type: object
       properties:
@@ -662,12 +674,21 @@ paths:
         - Orders
       summary: Создание нового заказа
       operationId: createOrder
+      parameters:
+        - name: X-User-Id
+          in: header
+          required: true
+          description: ID пользователя (из JWT токена)
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/OrderCreateRequest'
+
       responses:
         '201':
           description: Заказ создан
@@ -727,6 +748,13 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: X-User-Id
+          in: header
+          required: true
+          description: ID пользователя (из JWT токена)
+          schema:
+            type: string
+            format: uuid
       responses:
         '200':
           description: Заказ найден
@@ -760,12 +788,19 @@ paths:
           schema:
             type: string
             format: uuid
+        - name: X-User-Id
+          in: header
+          required: true
+          description: ID пользователя (из JWT токена)
+          schema:
+            type: string
+            format: uuid
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OrderCreateRequest'
+              $ref: '#/components/schemas/OrderUpdateRequest'
       responses:
         '200':
           description: Заказ обновлен
@@ -816,6 +851,13 @@ paths:
         - name: id
           in: path
           required: true
+          schema:
+            type: string
+            format: uuid
+        - name: X-User-Id
+          in: header
+          required: true
+          description: ID пользователя (из JWT токена)
           schema:
             type: string
             format: uuid

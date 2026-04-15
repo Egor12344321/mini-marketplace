@@ -23,4 +23,6 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     Optional<Order> findActiveOrderByUserId(@Param("userId") UUID userId, @Param("statuses") List<Order.OrderStatus> statuses);
 
     long countByUserIdAndCreatedAtAfter(UUID userId, LocalDateTime since);
+
+    boolean existsByIdAndUserId(UUID orderId, UUID userId);
 }

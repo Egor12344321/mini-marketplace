@@ -13,6 +13,7 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Component
@@ -51,6 +52,7 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "access");
         claims.put("role", user.getRole().name());
+        claims.put("userId", user.getId());
 
         return createToken(claims, user.getUsername(), accessExpiration);
     }
@@ -89,6 +91,8 @@ public class JwtUtil {
             return false;
         }
     }
+
+    public UUID extractUserId(String token){return extractClaim(token, claims -> claims.get("userId", UUID.class));}
 
     public String extractUsername(String token){
         return extractClaim(token, Claims::getSubject);

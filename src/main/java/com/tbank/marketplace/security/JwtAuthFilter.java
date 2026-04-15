@@ -20,6 +20,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.security.SignatureException;
+import java.util.UUID;
 
 
 @Component
@@ -38,10 +39,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (path.startsWith("/api/auth/")) {
             filterChain.doFilter(request, response);
+            log.debug("Пропускаю проверку токена для пути: {}", path);
             return;
         }
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.debug("Токен не отправлен для пути: {}", path);
             sendError(response, "UNAUTHORIZED", "Authentication required");
             return;
         }
@@ -55,6 +58,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                 if (jwtUtil.isTokenExpired(token)){
                     sendError(response, "TOKEN_EXPIRED", "Срок действия токена истек");
+                    log.debug("Срок действия токена истек: {}", path);
                     return;
                 }
 
@@ -63,6 +67,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    UUID userId = jwtUtil.extractUserId(token);
+                    request.setAttribute("userId", userId);
                 } else {
                     sendError(response, "TOKEN_INVALID", "Токен не действителен");
                     return;

@@ -43,8 +43,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
     }
 
-    @ExceptionHandler(RateLimitingCreateOrderException.class)
-    public ResponseEntity<ErrorResponse> handleRateLimitingCreateOrderException(RateLimitingCreateOrderException e){
+    @ExceptionHandler({RateLimitingCreateOrderException.class, RateLimitingUpdateOrderException.class})
+    public ResponseEntity<ErrorResponse> handleRateLimitingCreateOrderException(Exception e){
         ErrorResponse errorResponse = new ErrorResponse();
         errorResponse.setErrorCode("ORDER_LIMIT_EXCEEDED");
         errorResponse.setMessage(e.getMessage());
@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ProductInactiveException.class)
     public ResponseEntity<ErrorResponse> handleProductInactiveException(ProductInactiveException e){
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setErrorCode("PRODUCT_INACTIVE");
         errorResponse.setMessage(e.getMessage());
         errorResponse.setDetails(JsonNullable.undefined());
 
@@ -76,30 +76,61 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(PromoCodeInvalidException.class)
     public ResponseEntity<ErrorResponse> handlePromoCodeInvalidException(PromoCodeInvalidException e){
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setErrorCode("PROMO_CODE_INVALID");
         errorResponse.setMessage(e.getMessage());
         errorResponse.setDetails(JsonNullable.undefined());
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(errorResponse);
     }
 
     @ExceptionHandler(PromoCodeMinAmountException.class)
     public ResponseEntity<ErrorResponse> handlePromoCodeMinAmountException(PromoCodeMinAmountException e){
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setErrorCode("PROMO_CODE_MIN_AMOUNT");
         errorResponse.setMessage(e.getMessage());
         errorResponse.setDetails(JsonNullable.undefined());
 
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_CONTENT).body(errorResponse);
     }
 
     @ExceptionHandler(InsufficientStockException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientStockException(InsufficientStockException e){
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setErrorCode("ORDER_HAS_ACTIVE");
+        errorResponse.setErrorCode("INSUFFICIENT_STOCK");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.of(e.getErrors()));
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFoundException(OrderNotFoundException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+            errorResponse.setErrorCode("ORDER_NOT_FOUND");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler(OrderOwnershipViolationException.class)
+    public ResponseEntity<ErrorResponse> handleOrderOwnershipViolationException(OrderOwnershipViolationException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("ORDER_OWNERSHIP_VIOLATION");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    @ExceptionHandler(InvalidStateTransitionException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidStateTransitionException(InvalidStateTransitionException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("INVALID_STATE_TRANSITION");
         errorResponse.setMessage(e.getMessage());
         errorResponse.setDetails(JsonNullable.undefined());
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
+
 }
