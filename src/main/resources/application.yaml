@@ -1,9 +1,6 @@
 spring:
   application:
     name: marketplace
-  config:
-    activate:
-      on-profile: prod
 
   flyway:
     enabled: true
@@ -13,7 +10,7 @@ spring:
     validate-on-migrate: true
 
   datasource:
-    url: jdbc:postgresql://postgres:5432/arctic_team?currentSchema=public
+    url: jdbc:postgresql://postgres:5432/marketplace_db?currentSchema=public
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     hikari:
@@ -46,12 +43,11 @@ rate-limit:
 
 logging:
   level:
-    root: INFO
-    com.arctic.backend_for_arctic_team: INFO
-    org.springframework: WARN
-    org.springframework.security: WARN
-    org.hibernate: WARN
-    org.flywaydb: WARN
+    com.arctic.backend_for_arctic_team: TRACE
+    org.springframework.security: DEBUG
+    org.springframework.transaction: DEBUG
+    org.flywaydb: INFO
+    org.hibernate.SQL: TRACE
   pattern:
     console: "%d{ISO8601} [%thread] [%X{requestId}] %-5level %logger{36} - %msg%n"
 

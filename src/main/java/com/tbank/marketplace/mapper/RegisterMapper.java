@@ -5,11 +5,13 @@ import com.tbank.marketplace.model.RegisterResponse;
 import com.tbank.marketplace.model.RegisterResponseUser;
 import com.tbank.marketplace.model.entity.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneOffset;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class RegisterMapper {
@@ -35,8 +37,8 @@ public class RegisterMapper {
         responseUser.setEmail(user.getEmail());
         responseUser.setName(user.getName());
 
-        String role = user.getRole().name();
-        responseUser.setRole(RegisterResponseUser.RoleEnum.fromValue(role));
+        String roleValue = "ROLE_" + user.getRole().name();
+        responseUser.setRole(RegisterResponseUser.RoleEnum.fromValue(roleValue));
 
         if (user.getCreatedAt() != null) {
             responseUser.setCreatedAt(user.getCreatedAt().atOffset(ZoneOffset.UTC));
@@ -48,5 +50,4 @@ public class RegisterMapper {
 
         return response;
     }
-
 }

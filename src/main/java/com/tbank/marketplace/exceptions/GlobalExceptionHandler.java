@@ -5,6 +5,10 @@ import com.tbank.marketplace.exceptions.auth_exceptions.InvalidCredentialsExcept
 import com.tbank.marketplace.exceptions.auth_exceptions.InvalidRefreshTokenException;
 import com.tbank.marketplace.exceptions.auth_exceptions.UserAlreadyExistsException;
 import com.tbank.marketplace.exceptions.order_exceptions.*;
+import com.tbank.marketplace.exceptions.product_exceptions.ProductInactiveException;
+import com.tbank.marketplace.exceptions.promo_exceptions.PromoCodeAlreadyExistsException;
+import com.tbank.marketplace.exceptions.promo_exceptions.PromoCodeInvalidException;
+import com.tbank.marketplace.exceptions.promo_exceptions.PromoCodeMinAmountException;
 import com.tbank.marketplace.model.ErrorResponse;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.http.HttpStatus;
@@ -132,5 +136,44 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
+
+    @ExceptionHandler(PromoCodeAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handlePromoCodeAlreadyExistsException(PromoCodeAlreadyExistsException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("PROMOCODE_ALREADY_EXISTS");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("INTERNAL_SERVER_ERROR");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<ErrorResponse> handleSecurityException(SecurityException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("PRODUCT_OWNERSHIP_VIOLATION");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+    }
+
+    private ErrorResponse createErrorResponse(String code, String message, JsonNullable<Object> details){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode(code);
+        errorResponse.setMessage(message);
+        errorResponse.setDetails(details);
+
+        return errorResponse;
+    };
 
 }

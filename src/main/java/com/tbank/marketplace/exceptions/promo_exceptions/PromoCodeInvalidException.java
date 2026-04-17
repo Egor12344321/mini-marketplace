@@ -1,4 +1,4 @@
-package com.tbank.marketplace.exceptions.order_exceptions;
+package com.tbank.marketplace.exceptions.promo_exceptions;
 
 public class PromoCodeInvalidException extends RuntimeException {
     public PromoCodeInvalidException(String message) {

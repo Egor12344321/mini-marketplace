@@ -1,6 +1,10 @@
 package com.tbank.marketplace.service;
 
 import com.tbank.marketplace.exceptions.order_exceptions.*;
+import com.tbank.marketplace.exceptions.product_exceptions.ProductInactiveException;
+import com.tbank.marketplace.exceptions.product_exceptions.ProductNotFoundException;
+import com.tbank.marketplace.exceptions.promo_exceptions.PromoCodeInvalidException;
+import com.tbank.marketplace.exceptions.promo_exceptions.PromoCodeMinAmountException;
 import com.tbank.marketplace.mapper.OrderMapper;
 import com.tbank.marketplace.model.OrderCreateRequest;
 import com.tbank.marketplace.model.OrderItemRequest;
@@ -210,8 +214,7 @@ public class OrderService {
             }
 
             if (product.getStock() < item.getQuantity()) {
-                stockErrors.add(new InsufficientStockException.StockError(
-                        product.getId().toString(), product.getStock(), item.getQuantity()));
+                stockErrors.add(new InsufficientStockException.StockError(product.getId().toString(), product.getStock(), item.getQuantity()));
             }
 
             products.add(product);
@@ -270,7 +273,7 @@ public class OrderService {
             throw new PromoCodeInvalidException("Срок действия промокода истёк");
         }
         if (subtotal.compareTo(promo.getMinOrderAmount()) < 0) {
-            log.info("Сумма {} меньше минимальной {} для промокода {}", subtotal, promo.getMinOrderAmount(), code);
+            log.warn("Сумма {} меньше минимальной {} для промокода {}", subtotal, promo.getMinOrderAmount(), code);
             throw new PromoCodeMinAmountException(
                     String.format("Минимальная сумма заказа: %s", promo.getMinOrderAmount()));
         }

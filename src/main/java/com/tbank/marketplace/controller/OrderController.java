@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,36 +22,46 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @RestController
 @Slf4j
-@RequestMapping("/api/orders")
+@RequestMapping("/api")
 public class OrderController implements OrdersApi {
 
     private final OrderService orderService;
 
     @Override
-    public ResponseEntity<Void> cancelOrder(UUID orderId, @RequestAttribute("userId") UUID userId) {
+    public ResponseEntity<Void> cancelOrder(UUID orderId) {
+        UUID userId = getCurrentUserId();
         log.debug("Stared cancelling order: {}", orderId);
         orderService.cancelOrder(userId, orderId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
     @Override
-    public ResponseEntity<OrderResponse> createOrder(@RequestAttribute("userId") UUID userId, @RequestBody OrderCreateRequest orderCreateRequest) {
+    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderCreateRequest orderCreateRequest) {
+        UUID userId = getCurrentUserId();
         log.debug("Stared creating new order");
         OrderResponse orderResponse = orderService.createOrder(orderCreateRequest, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(orderResponse);
     }
 
     @Override
-    public ResponseEntity<OrderResponse> getOrder(UUID orderId, @RequestAttribute("userId") UUID userId) {
+    public ResponseEntity<OrderResponse> getOrder(UUID orderId) {
+        UUID userId = getCurrentUserId();
         OrderResponse orderResponse = orderService.getOrder(orderId, userId);
         return ResponseEntity.ok(orderResponse);
     }
 
     @Override
-    public ResponseEntity<OrderResponse> updateOrder(@PathVariable UUID orderId, @RequestAttribute("userId") UUID userId, @RequestBody OrderUpdateRequest orderUpdateRequest) {
+    public ResponseEntity<OrderResponse> updateOrder(@PathVariable UUID orderId, @RequestBody OrderUpdateRequest orderUpdateRequest) {
+        UUID userId = getCurrentUserId();
         log.debug("Stared updating order: {}", orderId);
         OrderResponse orderResponse = orderService.updateOrder(userId, orderId, orderUpdateRequest);
         return ResponseEntity.ok(orderResponse);
+    }
+
+    private UUID getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        return user.getId();
     }
 
 }
