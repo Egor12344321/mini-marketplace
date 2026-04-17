@@ -3,6 +3,7 @@ package com.tbank.marketplace.security;
 import com.tbank.marketplace.model.entity.User;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.security.SignatureException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,17 +12,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.security.SignatureException;
 import java.util.UUID;
-
 
 @Component
 @Slf4j
@@ -32,14 +29,22 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getServletPath();
+        String method = request.getMethod();
         String authHeader = request.getHeader("Authorization");
 
-        if (path.startsWith("/api/auth/")) {
-            filterChain.doFilter(request, response);
+        log.debug("Filtering request: {} {}", method, path);
+
+        if (path.startsWith("/api/auth/") ||
+                path.startsWith("/actuator/health") ||
+                path.startsWith("/v3/api-docs") ||
+                path.startsWith("/swagger-ui")) {
             log.debug("Пропускаю проверку токена для пути: {}", path);
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -50,45 +55,80 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         final String token = authHeader.substring(7);
+
         try {
+            if (!path.equals("/api/auth/refresh") && jwtUtil.isRefreshToken(token)) {
+                log.debug("Отправлен refresh token вместо access token");
+                sendError(response, "INVALID_TOKEN_TYPE", "Invalid token type");
+                return;
+            }
+
             String email = jwtUtil.extractUsername(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                log.debug("Аутентификация отсутствует, проверяем токен для пользователя: {}", email);
+
                 User userDetails = (User) userDetailsService.loadUserByUsername(email);
 
-                if (jwtUtil.isTokenExpired(token)){
-                    sendError(response, "TOKEN_EXPIRED", "Срок действия токена истек");
+                if (jwtUtil.isTokenExpired(token)) {
                     log.debug("Срок действия токена истек: {}", path);
+                    sendError(response, "TOKEN_EXPIRED", "Token has expired");
                     return;
                 }
 
                 if (jwtUtil.validateAccessToken(token, userDetails)) {
+                    log.debug("Token valid для пользователя: {}", email);
+
                     UsernamePasswordAuthenticationToken authToken =
                             new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
-                    UUID userId = jwtUtil.extractUserId(token);
+
+                    String userId = jwtUtil.extractUserId(token);
                     request.setAttribute("userId", userId);
+
+                    log.debug("Установлена аутентификация для пользователя: {} (id={})", email, userId);
                 } else {
-                    sendError(response, "TOKEN_INVALID", "Токен не действителен");
+                    log.debug("Токен не валиден для пользователя: {}", email);
+                    sendError(response, "TOKEN_INVALID", "Invalid token");
                     return;
                 }
+            } else {
+                if (email == null) {
+                    log.warn("Не удалось извлечь email из токена");
+                } else {
+                    log.debug("Аутентификация уже установлена для пользователя: {}", email);
+                }
             }
+
             filterChain.doFilter(request, response);
 
-        } catch (Exception e) {
-            log.warn("Токен не действителен, ошибка: {}", e.getMessage());
-            sendError(response, "TOKEN_INVALID", "Токен не действителен");
+        } catch (ExpiredJwtException e) {
+            log.warn("Токен истек: {}", e.getMessage());
+            sendError(response, "TOKEN_EXPIRED", "Срок действия токена истек");
+        } catch (MalformedJwtException e) {
+            log.warn("Невалидный формат токена: {}", e.getMessage());
+            sendError(response, "TOKEN_INVALID", "Невалидный формат токена");
+        } catch (SignatureException e) {
+            log.warn("Невалидная подпись токена: {}", e.getMessage());
+            sendError(response, "TOKEN_INVALID", "Невалидная сигнатура токена");
+        } catch (io.jsonwebtoken.JwtException e) {
+            log.warn("JWT ошибка: {}", e.getMessage());
+            sendError(response, "TOKEN_INVALID", "Токен не действительный");
         }
     }
 
     private void sendError(HttpServletResponse response, String errorCode, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write(String.format(
-                "{\"error_code\": \"%s\", \"message\": \"%s\"}",
-                errorCode, message
-        ));
+        if (!response.isCommitted()) {
+            response.reset();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(String.format(
+                    "{\"error_code\":\"%s\",\"message\":\"%s\"}",
+                    errorCode, message
+            ));
+            response.getWriter().flush();
+        }
     }
 }
-

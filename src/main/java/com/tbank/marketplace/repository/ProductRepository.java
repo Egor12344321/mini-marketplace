@@ -10,8 +10,10 @@ import java.util.UUID;
 
 public interface ProductRepository extends JpaRepository<Product, UUID> {
 
-    Page<Product> findProductsByStatus(Product.ProductStatus status, Pageable pageable);
+    Page<Product> findByStatus(Product.ProductStatus status, Pageable pageable);
     Page<Product> findByCategoryAndStatus(String category, Product.ProductStatus status, Pageable pageable);
-    Optional<Product> findByIdAndSellerId(UUID id, UUID sellerId);
+    Page<Product> findByCategory(String category, Pageable pageable);
+    boolean existsByIdAndSellerId(UUID id, UUID sellerId);
+
 
 }

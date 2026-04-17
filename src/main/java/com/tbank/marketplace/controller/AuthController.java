@@ -15,11 +15,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @Slf4j
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
+@RestController
 public class AuthController implements AuthApi {
 
     private final AuthService authService;
@@ -40,7 +42,6 @@ public class AuthController implements AuthApi {
     }
 
     @Override
-    @PostMapping("/register")
     public ResponseEntity<com.tbank.marketplace.model.RegisterResponse> register(@Valid RegisterRequest registerRequest) {
         log.debug("Началась регистрация нового пользователя");
         RegisterResponse response = authService.register(registerRequest);

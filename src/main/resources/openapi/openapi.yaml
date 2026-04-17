@@ -674,14 +674,6 @@ paths:
         - Orders
       summary: Создание нового заказа
       operationId: createOrder
-      parameters:
-        - name: X-User-Id
-          in: header
-          required: true
-          description: ID пользователя (из JWT токена)
-          schema:
-            type: string
-            format: uuid
       requestBody:
         required: true
         content:
@@ -748,13 +740,6 @@ paths:
           schema:
             type: string
             format: uuid
-        - name: X-User-Id
-          in: header
-          required: true
-          description: ID пользователя (из JWT токена)
-          schema:
-            type: string
-            format: uuid
       responses:
         '200':
           description: Заказ найден
@@ -785,13 +770,6 @@ paths:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
-        - name: X-User-Id
-          in: header
-          required: true
-          description: ID пользователя (из JWT токена)
           schema:
             type: string
             format: uuid
@@ -851,13 +829,6 @@ paths:
         - name: id
           in: path
           required: true
-          schema:
-            type: string
-            format: uuid
-        - name: X-User-Id
-          in: header
-          required: true
-          description: ID пользователя (из JWT токена)
           schema:
             type: string
             format: uuid

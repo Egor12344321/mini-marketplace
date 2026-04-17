@@ -52,7 +52,7 @@ public class JwtUtil {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "access");
         claims.put("role", user.getRole().name());
-        claims.put("userId", user.getId());
+        claims.put("userId", user.getId().toString());
 
         return createToken(claims, user.getUsername(), accessExpiration);
     }
@@ -60,6 +60,8 @@ public class JwtUtil {
     public String generateRefreshToken(User user){
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "refresh");
+        claims.put("role", user.getRole().name());
+        claims.put("userId", user.getId().toString());
         return createToken(claims, user.getUsername(), refreshExpiration);
     }
 
@@ -92,7 +94,7 @@ public class JwtUtil {
         }
     }
 
-    public UUID extractUserId(String token){return extractClaim(token, claims -> claims.get("userId", UUID.class));}
+    public String extractUserId(String token){return extractClaim(token, claims -> claims.get("userId", String.class));}
 
     public String extractUsername(String token){
         return extractClaim(token, Claims::getSubject);

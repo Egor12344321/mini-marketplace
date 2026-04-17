@@ -1,4 +1,4 @@
-package com.tbank.marketplace.exceptions.order_exceptions;
+package com.tbank.marketplace.exceptions.product_exceptions;
 
 public class ProductInactiveException extends RuntimeException {
     public ProductInactiveException(String message) {
