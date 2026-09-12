@@ -5,6 +5,7 @@ import com.tbank.marketplace.model.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
@@ -19,14 +20,26 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    @Value("${jwt.secret:kj16bC8tHJyc9UnDCi8uDxynBKofS9sQpb3lRX6A2TQ}")
+    private static final int HS256_MIN_SECRET_BYTES = 32;
+
+    @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.access.expiration:900000}")
+    @Value("${jwt.access-token-expiration:900000}")
     private Long accessExpiration;
 
-    @Value("${jwt.refresh.expiration:604800000}")
+    @Value("${jwt.refresh-token-expiration:604800000}")
     private Long refreshExpiration;
+
+    @PostConstruct
+    public void validateSecret() {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("jwt.secret не задан: установите переменную окружения JWT_SECRET");
+        }
+        if (secret.getBytes().length < HS256_MIN_SECRET_BYTES) {
+            throw new IllegalStateException("jwt.secret слишком короткий: требуется минимум " + HS256_MIN_SECRET_BYTES + " байт для HS256");
+        }
+    }
 
     private SecretKey getSigningKey(){
         byte[] keyBytes = secret.getBytes();

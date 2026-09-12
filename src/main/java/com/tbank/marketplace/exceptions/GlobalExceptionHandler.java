@@ -6,6 +6,7 @@ import com.tbank.marketplace.exceptions.auth_exceptions.InvalidRefreshTokenExcep
 import com.tbank.marketplace.exceptions.auth_exceptions.UserAlreadyExistsException;
 import com.tbank.marketplace.exceptions.order_exceptions.*;
 import com.tbank.marketplace.exceptions.product_exceptions.ProductInactiveException;
+import com.tbank.marketplace.exceptions.product_exceptions.ProductNotFoundException;
 import com.tbank.marketplace.exceptions.promo_exceptions.PromoCodeAlreadyExistsException;
 import com.tbank.marketplace.exceptions.promo_exceptions.PromoCodeInvalidException;
 import com.tbank.marketplace.exceptions.promo_exceptions.PromoCodeMinAmountException;
@@ -107,14 +108,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
-    @ExceptionHandler(OrderNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleOrderNotFoundException(OrderNotFoundException e){
+    @ExceptionHandler(ProductNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleProductNotFoundException(ProductNotFoundException e){
         ErrorResponse errorResponse = new ErrorResponse();
-            errorResponse.setErrorCode("ORDER_NOT_FOUND");
+        errorResponse.setErrorCode("PRODUCT_NOT_FOUND");
         errorResponse.setMessage(e.getMessage());
         errorResponse.setDetails(JsonNullable.undefined());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    }
+
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleOrderNotFoundException(OrderNotFoundException e){
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setErrorCode("ORDER_NOT_FOUND");
+        errorResponse.setMessage(e.getMessage());
+        errorResponse.setDetails(JsonNullable.undefined());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler(OrderOwnershipViolationException.class)
@@ -150,11 +161,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(IllegalArgumentException e){
         ErrorResponse errorResponse = new ErrorResponse();
-        errorResponse.setErrorCode("INTERNAL_SERVER_ERROR");
+        errorResponse.setErrorCode("BAD_REQUEST");
         errorResponse.setMessage(e.getMessage());
         errorResponse.setDetails(JsonNullable.undefined());
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
     @ExceptionHandler(SecurityException.class)

@@ -98,10 +98,11 @@ public class OrderService {
                 discount = calculateDiscount(promoCode, subtotal);
                 log.debug("Промокод {} остаётся применён, скидка: {}", promoCode.getCode(), discount);
             } else if (promoCode != null) {
+                BigDecimal minOrderAmount = promoCode.getMinOrderAmount();
                 updatePromoCodeUsage(promoCode, false);
                 order.setPromoCodeId(null);
                 promoCode = null;
-                log.info("Промокод отменён, сумма {} меньше минимальной {}", subtotal, promoCode != null ? promoCode.getMinOrderAmount() : 0);
+                log.info("Промокод отменён, сумма {} меньше минимальной {}", subtotal, minOrderAmount);
             }
         }
 
@@ -112,7 +113,6 @@ public class OrderService {
         orderItemRepository.deleteAll(oldItems);
         List<OrderItem> newOrderItems = saveOrderItems(order, newProducts, request.getItems());
 
-        updatePromoCodeUsage(promoCode, true);
         saveUserOperation(userId, UserOperation.OperationType.UPDATE_ORDER);
 
         log.info("Заказ {} обновлён, сумма: {}, скидка: {}", order.getId(), total, discount);
@@ -149,6 +149,7 @@ public class OrderService {
     }
 
 
+    @Transactional(readOnly = true)
     public OrderResponse getOrder(UUID orderId, UUID userId) {
         Order order = getOrderById(orderId);
         validateOrderOwnership(order, userId);
@@ -206,7 +207,7 @@ public class OrderService {
         List<InsufficientStockException.StockError> stockErrors = new ArrayList<>();
 
         for (OrderItemRequest item : items) {
-            Product product = productRepository.findById(item.getProductId())
+            Product product = productRepository.findByIdForUpdate(item.getProductId())
                     .orElseThrow(() -> new ProductNotFoundException("Товар не найден: " + item.getProductId()));
 
             if (product.getStatus() != Product.ProductStatus.ACTIVE) {
@@ -238,7 +239,8 @@ public class OrderService {
 
     private void restoreStock(List<OrderItem> items) {
         for (OrderItem item : items) {
-            Product product = item.getProduct();
+            Product product = productRepository.findByIdForUpdate(item.getProduct().getId())
+                    .orElseThrow(() -> new ProductNotFoundException("Товар не найден: " + item.getProduct().getId()));
             product.setStock(product.getStock() + item.getQuantity());
             productRepository.save(product);
             log.debug("Возвращено {} шт товара {}", item.getQuantity(), product.getId());

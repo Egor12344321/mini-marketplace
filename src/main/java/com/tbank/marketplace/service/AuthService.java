@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.openapitools.jackson.nullable.JsonNullable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -38,7 +39,13 @@ public class AuthService {
 
         User user = registerMapper.mapFromRegisterReqToUserEntity(registerRequest);
 
-        User savedUser = userRepository.save(user);
+        User savedUser;
+        try {
+            savedUser = userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Попытка повторной регистрации email: {}", user.getEmail());
+            throw new UserAlreadyExistsException("Пользователь с таким email уже существует");
+        }
         log.info("Пользователь: {} (id={}) успешно создан", savedUser.getEmail(), savedUser.getId());
         return registerMapper.mapFromUserEntityToRegisterResponse(savedUser);
     }

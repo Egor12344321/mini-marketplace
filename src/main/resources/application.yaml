@@ -40,10 +40,12 @@ jwt:
 rate-limit:
   order-create:
     minutes: 5
+  order-update:
+    minutes: 1
 
 logging:
   level:
-    com.arctic.backend_for_arctic_team: TRACE
+    com.tbank.marketplace: DEBUG
     org.springframework.security: DEBUG
     org.springframework.transaction: DEBUG
     org.flywaydb: INFO

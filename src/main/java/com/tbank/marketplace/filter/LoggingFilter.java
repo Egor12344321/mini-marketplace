@@ -17,10 +17,13 @@ import org.springframework.web.util.ContentCachingResponseWrapper;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.*;
+import org.slf4j.MDC;
 
 @Slf4j
 @Component
 public class LoggingFilter extends OncePerRequestFilter {
+
+    private static final String MDC_REQUEST_ID = "requestId";
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -31,6 +34,7 @@ public class LoggingFilter extends OncePerRequestFilter {
 
         String requestId = UUID.randomUUID().toString();
         response.setHeader("X-Request-Id", requestId);
+        MDC.put(MDC_REQUEST_ID, requestId);
 
         ContentCachingRequestWrapper requestWrapper = new ContentCachingRequestWrapper(request, 10000);
         ContentCachingResponseWrapper responseWrapper = new ContentCachingResponseWrapper(response);
@@ -61,6 +65,7 @@ public class LoggingFilter extends OncePerRequestFilter {
 
             log.info(objectMapper.writeValueAsString(logEntry));
 
+            MDC.remove(MDC_REQUEST_ID);
             responseWrapper.copyBodyToResponse();
         }
     }
@@ -82,18 +87,6 @@ public class LoggingFilter extends OncePerRequestFilter {
             return null;
         }
     }
-
-    private Object parseJsonBody(String body) {
-        if (body == null || body.isEmpty()) {
-            return null;
-        }
-        try {
-            return objectMapper.readValue(body, Object.class);
-        } catch (Exception e) {
-            return body;
-        }
-    }
-
 
     private String maskSensitive(String body) {
         if (body == null) return null;

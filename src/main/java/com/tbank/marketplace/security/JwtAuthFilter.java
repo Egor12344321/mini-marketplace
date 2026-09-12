@@ -57,12 +57,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         final String token = authHeader.substring(7);
 
         try {
-            if (!path.equals("/api/auth/refresh") && jwtUtil.isRefreshToken(token)) {
-                log.debug("Отправлен refresh token вместо access token");
-                sendError(response, "INVALID_TOKEN_TYPE", "Invalid token type");
-                return;
-            }
-
             String email = jwtUtil.extractUsername(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
